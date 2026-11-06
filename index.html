@@ -354,11 +354,105 @@ details p{margin-top:8px;color:var(--ink2);font-size:14px}
 }
 .terms-title{font-size:14px;font-weight:700;color:var(--ink)}
 .terms-text{margin:0;font-size:13px;line-height:1.55;color:var(--ink2)}
+
+/* Terms Pop-up Modal */
+.terms-modal-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:rgba(15, 23, 42, 0.48);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  z-index:999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px max(16px, env(safe-area-inset-right, 16px)) 16px max(16px, env(safe-area-inset-left, 16px));
+  transition:all 0.22s ease;
+}
+.terms-modal-overlay[hidden]{display:none !important}
+.terms-modal-card{
+  position:relative;
+  width:100%;
+  max-width:500px;
+  max-height:calc(92vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  overflow-y:auto;
+  background:#ffffff;
+  border:1.5px solid var(--line);
+  border-radius:22px;
+  padding:24px 20px;
+  box-shadow:0 24px 48px -12px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.04);
+  animation:modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes modalPopIn{
+  from{transform:scale(0.93) translateY(12px);opacity:0}
+  to{transform:scale(1) translateY(0);opacity:1}
+}
+.terms-modal-close{
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  border:1.5px solid var(--line);
+  background:#f8fafc;
+  color:var(--ink2);
+  font-size:20px;
+  line-height:1;
+  cursor:pointer;
+  display:grid;
+  place-items:center;
+  transition:all 0.15s ease;
+  z-index:2;
+}
+.terms-modal-close:hover{background:#ffe4e6;border-color:#fda4af;color:var(--bad)}
+.terms-agree-btn{
+  margin-top:16px;
+  font-size:15px;
+  font-weight:800;
+  padding:13px 18px;
+  border-radius:14px;
+}
 </style>
 </head>
 <body>
 <div class="wrap" id="app"></div>
 <div class="toast" role="status" aria-live="polite"><div id="toast" hidden></div></div>
+
+<!-- Modal Pop-up Syarat & Ketentuan saat Halaman Dibuka -->
+<div class="terms-modal-overlay" id="termsModal" role="dialog" aria-modal="true" aria-labelledby="termsModalTitle">
+  <div class="terms-modal-card">
+    <button type="button" class="terms-modal-close" id="closeTermsModal" aria-label="Tutup">&times;</button>
+    <div class="terms-tag">📜 SYARAT &amp; KETENTUAN</div>
+    <h2 class="terms-biz" id="termsModalTitle">MARI JUA JASTIP</h2>
+    <p class="terms-intro">Demi kenyamanan bersama dan kelancaran layanan, harap membaca dan memahami ketentuan berikut sebelum melakukan pemesanan.</p>
+    
+    <div class="terms-stack">
+      <div class="terms-item">
+        <div class="terms-head">
+          <span class="terms-num">1</span>
+          <span class="terms-title">Sistem Jastip Mengikuti Rute Pemesanan</span>
+        </div>
+        <p class="terms-text">Mari Jua Jastip adalah layanan jasa titip, bukan layanan ojek online dengan sistem antar langsung setiap pesanan. Pembelian dan pengantaran barang dilakukan mengikuti urutan serta rute pemesanan yang tersedia. Oleh karena itu, pesanan tidak selalu dapat langsung diantar setelah diorder.</p>
+      </div>
+
+      <div class="terms-item">
+        <div class="terms-head">
+          <span class="terms-num">2</span>
+          <span class="terms-title">Pembayaran Harga Barang di Awal</span>
+        </div>
+        <p class="terms-text">Pelanggan wajib mentransfer dana untuk harga barang terlebih dahulu sebelum pesanan dibelikan. Jika belum mengetahui harga pasti, pelanggan dapat memberikan estimasi harga. Apabila terdapat selisih harga, baik lebih maupun kurang, akan diinformasikan kepada pelanggan. Hal ini terjadi dikarenakan beberapa kali driver sudah membeli barang dan ternyata pemesan membatalkan sepihak, utk menghindari hal tsb, muncullah peraturan ini.</p>
+      </div>
+    </div>
+
+    <button type="button" class="btn wa block terms-agree-btn" id="agreeTermsBtn">
+      Saya Paham &amp; Setuju
+    </button>
+  </div>
+</div>
 
 <!-- Supabase CDN (opsional untuk sync cloud real-time) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -520,6 +614,7 @@ function build(){
           +'<p class="terms-text">Pelanggan wajib mentransfer dana untuk harga barang terlebih dahulu sebelum pesanan dibelikan. Jika belum mengetahui harga pasti, pelanggan dapat memberikan estimasi harga. Apabila terdapat selisih harga, baik lebih maupun kurang, akan diinformasikan kepada pelanggan. Hal ini terjadi dikarenakan beberapa kali driver sudah membeli barang dan ternyata pemesan membatalkan sepihak, utk menghindari hal tsb, muncullah peraturan ini.</p>'
         +'</div>'
       +'</div>'
+      +'<button type="button" class="btn sm" style="margin-top:12px" data-act="open-terms">📜 Buka Pop-up Syarat &amp; Ketentuan</button>'
     +'</section>';
 
   app.innerHTML=
@@ -635,7 +730,31 @@ app.addEventListener('click',async e=>{
     try{await navigator.clipboard.writeText(message());toast('Pesan disalin')}catch(err){toast('Pesan belum bisa disalin otomatis. Gunakan tombol WhatsApp.')}
   }
   else if(act==='reset'){D=blank();try{localStorage.removeItem(STORE)}catch(err){}build();toast('Form dikosongkan')}
+  else if(act==='open-terms'){const m=document.getElementById('termsModal');if(m)m.hidden=false}
 });
+
+function setupTermsModal(){
+  const modal=document.getElementById('termsModal');
+  const closeBtn=document.getElementById('closeTermsModal');
+  const agreeBtn=document.getElementById('agreeTermsBtn');
+  if(!modal)return;
+  const close=()=>{modal.hidden=true};
+  if(closeBtn)closeBtn.addEventListener('click',close);
+  if(agreeBtn){
+    agreeBtn.addEventListener('click',()=>{
+      close();
+      toast('Terima kasih, silakan isi formulir pesanan Anda.');
+    });
+  }
+  modal.addEventListener('click',e=>{
+    if(e.target===modal)close();
+  });
+  window.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&!modal.hidden)close();
+  });
+}
+setupTermsModal();
+
 build();
 </script>
 
