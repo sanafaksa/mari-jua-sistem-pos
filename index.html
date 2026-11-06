@@ -296,6 +296,64 @@ details p{margin-top:8px;color:var(--ink2);font-size:14px}
   max-width:480px;
 }
 .toast div[hidden]{display:none}
+
+/* Syarat & Ketentuan Card */
+.terms-card{
+  border-left:4px solid var(--sky-border);
+  background:var(--surface);
+  box-shadow:0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+}
+.terms-tag{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:11.5px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:#0284c7;
+  background:var(--sky-light);
+  border:1px solid rgba(186, 230, 253, 0.9);
+  padding:3px 10px;
+  border-radius:999px;
+  margin-bottom:8px;
+}
+.terms-biz{
+  margin:0 0 6px 0;
+  font-size:18px;
+  font-weight:800;
+  font-family:var(--font-display);
+  color:var(--ink);
+  letter-spacing:-0.01em;
+}
+.terms-intro{
+  margin:0 0 14px 0;
+  font-size:13.5px;
+  line-height:1.5;
+  color:var(--ink2);
+}
+.terms-stack{display:flex;flex-direction:column;gap:10px}
+.terms-item{
+  padding:12px 14px;
+  background:rgba(255, 255, 255, 0.65);
+  border:1.5px solid rgba(226, 232, 240, 0.9);
+  border-radius:14px;
+}
+.terms-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.terms-num{
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:var(--sky-border);
+  color:#ffffff;
+  display:grid;
+  place-items:center;
+  font-size:12px;
+  font-weight:800;
+  flex:none;
+}
+.terms-title{font-size:14px;font-weight:700;color:var(--ink)}
+.terms-text{margin:0;font-size:13px;line-height:1.55;color:var(--ink2)}
 </style>
 </head>
 <body>
@@ -346,7 +404,7 @@ function check(){
     if(!D.pkgDropoff.trim())return 'Isi tempat/lokasi penerimaan paket.';
     return '';
   }
-  if(D.ship==='kirim'&&!D.addr.trim())return 'Isi alamat pengiriman, atau pilih ambil sendiri.';
+  if(D.ship==='kirim'&&!D.addr.trim())return 'Isi alamat / tempat titip teman, atau pilih ambil sendiri.';
   const its=D.items.filter(i=>String(i.name).trim());
   if(!its.length)return 'Tulis minimal satu barang yang ingin dititip.';
   if(its.some(i=>(+i.qty||0)<1))return 'Jumlah barang minimal 1.';
@@ -378,9 +436,9 @@ function message(){
     if(i.link.trim())l+='\n    Link/Toko: '+i.link.trim();
     return l;
   });
-  let m='Halo '+CFG.biz+', saya mau titip beli ya.\n\n*Data pemesan*\nNama: '+D.name.trim()+'\nWhatsApp: '+D.wa.trim()+'\nPengiriman: '+(D.ship==='kirim'?'Dikirim ke '+D.addr.trim():'Ambil sendiri');
+  let m='Halo '+CFG.biz+', saya mau titip beli ya.\n\n*Data pemesan*\nNama: '+D.name.trim()+'\nWhatsApp: '+D.wa.trim()+'\nPengiriman: '+(D.ship==='kirim'?'Titip teman (ke '+D.addr.trim()+')':'Ambil sendiri');
   if(D.shipTime.trim()){
-    m+='\nWaktu '+(D.ship==='ambil'?'pengambilan':'pengiriman')+': '+D.shipTime.trim();
+    m+='\nWaktu '+(D.ship==='ambil'?'pengambilan':'titip / kirim')+': '+D.shipTime.trim();
   }
   m+='\n\n*Daftar titipan*\n'+lines.join('\n');
   if(est)m+='\n\nPerkiraan total barang: '+rp(est)+(noPrice?' (belum termasuk '+noPrice+' barang tanpa perkiraan harga)':'')+', belum termasuk fee jasa dan ongkir.';
@@ -431,9 +489,9 @@ function build(){
     '<section class="card"><div class="step"><i>1</i><h2>Data pemesan</h2></div><div class="stack">'
       +'<label class="f">Nama Anda<input class="in" id="f-name" data-f="name" autocomplete="name" placeholder="Nama Anda" value="'+esc(D.name)+'"></label>'
       +'<label class="f">Nomor WhatsApp Anda<input class="in" id="f-wa" data-f="wa" inputmode="tel" autocomplete="tel" placeholder="0812 3456 7890" value="'+esc(D.wa)+'"></label>'
-      +'<div class="opts" role="radiogroup" aria-label="Cara terima barang"><label class="opt"><input type="radio" name="ship" value="kirim" data-f="ship"'+(D.ship==='kirim'?' checked':'')+'>Dikirim</label><label class="opt"><input type="radio" name="ship" value="ambil" data-f="ship"'+(D.ship==='ambil'?' checked':'')+'>Ambil sendiri</label></div>'
-      +'<label class="f" id="addrBox"'+(D.ship==='ambil'?' hidden':'')+'>Alamat pengiriman<textarea class="in" id="f-addr" data-f="addr" placeholder="Alamat lengkap, kecamatan, kota, kode pos" autocomplete="street-address">'+esc(D.addr)+'</textarea></label>'
-      +'<label class="f" id="shipTimeBox"><span id="shipTimeLbl">'+(D.ship==='ambil'?'Kapan perkiraan diambil (bebas ketik)':'Kapan waktu kirim (bebas ketik)')+'</span><input class="in" id="f-shipTime" data-f="shipTime" placeholder="'+(D.ship==='ambil'?'Contoh: Nanti sore sekitar jam 17.00 / Besok siang':'Contoh: Hari ini jam 16.00 / Besok pagi jam 10.00 / Secepatnya')+'" value="'+esc(D.shipTime)+'"></label>'
+      +'<div class="opts" role="radiogroup" aria-label="Cara terima barang"><label class="opt"><input type="radio" name="ship" value="kirim" data-f="ship"'+(D.ship==='kirim'?' checked':'')+'>Titip teman</label><label class="opt"><input type="radio" name="ship" value="ambil" data-f="ship"'+(D.ship==='ambil'?' checked':'')+'>Ambil sendiri</label></div>'
+      +'<label class="f" id="addrBox"'+(D.ship==='ambil'?' hidden':'')+'>Alamat / Tempat penitipan teman<textarea class="in" id="f-addr" data-f="addr" placeholder="Alamat lengkap penyerahan / nama teman & patokan lokasi" autocomplete="street-address">'+esc(D.addr)+'</textarea></label>'
+      +'<label class="f" id="shipTimeBox"><span id="shipTimeLbl">'+(D.ship==='ambil'?'Kapan perkiraan diambil (bebas ketik)':'Kapan waktu titip / kirim (bebas ketik)')+'</span><input class="in" id="f-shipTime" data-f="shipTime" placeholder="'+(D.ship==='ambil'?'Contoh: Nanti sore sekitar jam 17.00 / Besok siang':'Contoh: Hari ini jam 16.00 / Besok pagi jam 10.00 / Secepatnya')+'" value="'+esc(D.shipTime)+'"></label>'
     +'</div></section>'
     +'<section class="card"><div class="step"><i>2</i><h2>Barang yang dititip</h2></div><div class="stack" id="items">'+D.items.map(itemHtml).join('')+'</div>'
       +'<button type="button" class="btn sm" style="margin-top:12px" data-act="add">+ Tambah barang</button></section>'
@@ -447,6 +505,23 @@ function build(){
     +'</div></section>';
   }
 
+  const termsHtml =
+    '<section class="card terms-card">'
+      +'<div class="terms-tag">📜 SYARAT &amp; KETENTUAN</div>'
+      +'<h2 class="terms-biz">MARI JUA JASTIP</h2>'
+      +'<p class="terms-intro">Demi kenyamanan bersama dan kelancaran layanan, harap membaca dan memahami ketentuan berikut sebelum melakukan pemesanan.</p>'
+      +'<div class="terms-stack">'
+        +'<div class="terms-item">'
+          +'<div class="terms-head"><span class="terms-num">1</span><span class="terms-title">Sistem Jastip Mengikuti Rute Pemesanan</span></div>'
+          +'<p class="terms-text">Mari Jua Jastip adalah layanan jasa titip, bukan layanan ojek online dengan sistem antar langsung setiap pesanan. Pembelian dan pengantaran barang dilakukan mengikuti urutan serta rute pemesanan yang tersedia. Oleh karena itu, pesanan tidak selalu dapat langsung diantar setelah diorder.</p>'
+        +'</div>'
+        +'<div class="terms-item">'
+          +'<div class="terms-head"><span class="terms-num">2</span><span class="terms-title">Pembayaran Harga Barang di Awal</span></div>'
+          +'<p class="terms-text">Pelanggan wajib mentransfer dana untuk harga barang terlebih dahulu sebelum pesanan dibelikan. Jika belum mengetahui harga pasti, pelanggan dapat memberikan estimasi harga. Apabila terdapat selisih harga, baik lebih maupun kurang, akan diinformasikan kepada pelanggan. Hal ini terjadi dikarenakan beberapa kali driver sudah membeli barang dan ternyata pemesan membatalkan sepihak, utk menghindari hal tsb, muncullah peraturan ini.</p>'
+        +'</div>'
+      +'</div>'
+    +'</section>';
+
   app.innerHTML=
   '<header class="hero"><img src="'+LOGO+'" onerror="this.onerror=null;this.src=LOGO_DATA" alt="Logo '+esc(CFG.biz)+'"><div><h1>'+esc(CFG.biz)+'</h1><p>'+esc(CFG.tagline)+'</p></div></header>'
   +'<div class="notice-final"><i>⚠️</i><div><b>Perhatian:</b> Orderan yg sudah masuk adalah hasil final, jika ada tambahan, wajib isi kembali form ini.</div></div>'
@@ -456,6 +531,7 @@ function build(){
     +'<label class="opt svc-opt"><input type="radio" name="serviceType" value="antar_paket" data-f="serviceType"'+(isAntar?' checked':'')+'><div><div class="svc-name">📦 Pengantaran Paket</div><div class="small muted">Kurir antar jemput paket</div></div></label>'
   +'</div></section>'
   +bodyHtml
+  +termsHtml
   +'<section class="card"><h2 style="margin-bottom:12px">Cara pesan</h2><ol class="how"><li>Pilih jenis layanan (Jastip Belanja atau Pengantaran Paket) lalu lengkapi form di atas.</li><li>Tekan tombol hijau. WhatsApp terbuka dengan pesan yang sudah tersusun, tinggal kirim.</li><li>Admin membalas dengan invoice atau ongkir. Setelah pembayaran masuk, pesanan langsung diproses.</li></ol>'
     +(CFG.pay?'<p class="small muted" style="margin-top:12px">Cara pembayaran: '+esc(CFG.pay)+'</p>':'')+'</section>'
   +(faq?'<section class="card"><h2 style="margin-bottom:12px">Pertanyaan umum</h2>'+faq+'</section>':'')
@@ -508,7 +584,7 @@ app.addEventListener('change',e=>{
     if(ab) ab.hidden=(D.ship==='ambil');
     const stLbl=document.getElementById('shipTimeLbl');
     const stIn=document.getElementById('f-shipTime');
-    if(stLbl) stLbl.textContent = (D.ship==='ambil'?'Kapan perkiraan diambil (bebas ketik)':'Kapan waktu kirim (bebas ketik)');
+    if(stLbl) stLbl.textContent = (D.ship==='ambil'?'Kapan perkiraan diambil (bebas ketik)':'Kapan waktu titip / kirim (bebas ketik)');
     if(stIn) stIn.placeholder = (D.ship==='ambil'?'Contoh: Nanti sore sekitar jam 17.00 / Besok siang':'Contoh: Hari ini jam 16.00 / Besok pagi jam 10.00 / Secepatnya');
     saveDraft();
     refresh();

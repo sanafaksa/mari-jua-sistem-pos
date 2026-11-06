@@ -196,7 +196,7 @@
       charges.push({ label: 'Ongkir', kind: 'rp', value: 0 });
       notes = ('[Pengantaran Paket]' + (shipTime ? ' [Waktu kirim: ' + shipTime + ']' : '') + (notes ? ' ' + notes : '')).trim();
     } else {
-      address = formData.ship === 'ambil' ? 'Ambil sendiri' : String(formData.addr || '').trim();
+      address = formData.ship === 'ambil' ? 'Ambil sendiri' : (formData.addr ? 'Titip teman: ' + String(formData.addr).trim() : 'Titip teman');
       items = (formData.items || [])
         .filter(i => String(i.name || '').trim())
         .map(i => {
@@ -216,7 +216,7 @@
       }
       charges.push({ label: 'Ongkir', kind: 'rp', value: 0 });
       if (shipTime) {
-        notes = ('[Waktu ' + (formData.ship === 'ambil' ? 'ambil: ' : 'kirim: ') + shipTime + ']' + (notes ? ' ' + notes : '')).trim();
+        notes = ('[Waktu ' + (formData.ship === 'ambil' ? 'ambil: ' : 'titip/kirim: ') + shipTime + ']' + (notes ? ' ' + notes : '')).trim();
       }
     }
 
